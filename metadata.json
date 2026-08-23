@@ -1,0 +1,8 @@
+{
+  "name": "Diagnóstico Comercial",
+  "description": "Diagnóstico de maturidade comercial da empresa Ginga Aí",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
