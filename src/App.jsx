@@ -38,10 +38,11 @@ const initialCompany = {
 };
 
 export default function App() {
+  // Detecta a rota com flexibilidade para maiúsculas/minúsculas e variações de URL
   const [screen, setScreen] = useState(() => {
-    const path = window.location.pathname;
-    if (path.startsWith("/admin")) return "admin";
-    if (path.startsWith("/portal/")) return "portal";
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes("/admin")) return "admin";
+    if (path.includes("/portal/")) return "portal";
     return "landing";
   });
 
@@ -52,17 +53,26 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [portalData, setPortalData] = useState(null);
 
-  // Carrega os dados do portal caso a URL seja /portal/:id
+  // Escuta mudanças de rota do navegador e carrega os dados do portal caso a URL seja /portal/:id
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path.startsWith("/portal/")) {
-      const companyId = path.split("/portal/")[1];
-      if (companyId) {
-        getCompanyPortalData(companyId)
-          .then((data) => setPortalData(data))
-          .catch((err) => console.error("Erro ao carregar portal:", err));
+    const handleLocation = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes("/admin")) {
+        setScreen("admin");
+      } else if (path.includes("/portal/")) {
+        setScreen("portal");
+        const companyId = path.split("/portal/")[1];
+        if (companyId) {
+          getCompanyPortalData(companyId)
+            .then((data) => setPortalData(data))
+            .catch((err) => console.error("Erro ao carregar portal:", err));
+        }
       }
-    }
+    };
+
+    handleLocation();
+    window.addEventListener("popstate", handleLocation);
+    return () => window.removeEventListener("popstate", handleLocation);
   }, []);
 
   const currentQuestion = questions[current];
@@ -90,7 +100,6 @@ export default function App() {
   }
 
   async function finish() {
-    // Processamento pelo Motor V2 (engine.js + recommender.js)
     const built = runEngineV2(answers, company, questions);
     setResult(built);
     setSaving(true);
