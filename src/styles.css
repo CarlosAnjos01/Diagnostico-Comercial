@@ -33,21 +33,13 @@ button { cursor: pointer; }
 }
 .brand {
   display: flex;
-  gap: 10px;
   align-items: center;
-  font-weight: 900;
-  letter-spacing: .12em;
-  font-size: 14px;
 }
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: var(--orange);
-  color: var(--white);
-  font-weight: 900;
+.brand-logo {
+  height: 36px;
+  max-height: 36px;
+  width: auto;
+  object-fit: contain;
 }
 .topbar-note {
   color: #bdbbb5;
@@ -349,7 +341,7 @@ button { cursor: pointer; }
   gap: 20px;
   border: 1px solid #d5d1c9;
   padding: 22px;
-  border-radius: 9px;
+  border-radius: 99px;
 }
 .bottleneck-score {
   width: 60px;
