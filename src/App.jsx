@@ -38,7 +38,6 @@ const initialCompany = {
 };
 
 export default function App() {
-  // Detecta a rota com flexibilidade para maiúsculas/minúsculas e variações de URL
   const [screen, setScreen] = useState(() => {
     const path = window.location.pathname.toLowerCase();
     if (path.includes("/admin")) return "admin";
@@ -53,7 +52,6 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [portalData, setPortalData] = useState(null);
 
-  // Escuta mudanças de rota do navegador e carrega os dados do portal caso a URL seja /portal/:id
   useEffect(() => {
     const handleLocation = () => {
       const path = window.location.pathname.toLowerCase();
@@ -100,8 +98,20 @@ export default function App() {
   }
 
   async function finish() {
+    // Processamento do Motor V2
     const built = runEngineV2(answers, company, questions);
     setResult(built);
+    
+    // Alimenta os dados do Portal do Cliente
+    setPortalData({
+      overall: built.overall,
+      maturity: built.maturity,
+      dimensionScores: built.dimensionScores,
+      gaps: built.gaps,
+      productFit: built.productFit,
+      company: company
+    });
+
     setSaving(true);
 
     try {
@@ -118,7 +128,8 @@ export default function App() {
       console.error("Erro ao persistir diagnóstico no D1:", error);
     } finally {
       setSaving(false);
-      setScreen("result");
+      // Redireciona diretamente para o PORTAL OPERACIONAL
+      setScreen("portal");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
@@ -161,7 +172,7 @@ export default function App() {
         </header>
       )}
 
-      {/* TELA ADMIN DA DIRETORIA GINGA */}
+      {/* PAINEL RESTRITO DE INTERNET (ADMIN) */}
       {screen === "admin" && <AdminDashboard />}
 
       {/* PORTAL OPERACIONAL DO CLIENTE */}
@@ -172,7 +183,7 @@ export default function App() {
         />
       )}
 
-      {/* FLUXO TRADICIONAL DE DIAGNÓSTICO */}
+      {/* FLUXO TRADICIONAL DE COLETA */}
       {screen === "landing" && <Landing onStart={start} />}
       {screen === "company" && (
         <CompanyForm
@@ -194,14 +205,6 @@ export default function App() {
           onAnswer={answer}
           onNext={next}
           onPrevious={previous}
-        />
-      )}
-      {screen === "result" && result && (
-        <Result
-          company={company}
-          result={result}
-          saving={saving}
-          onRestart={restart}
         />
       )}
     </div>
@@ -410,101 +413,6 @@ function Diagnostic({ question, dimension, current, total, progress, answers, an
 
         <div className="answered-note">
           <CheckCircle2 size={14} /> {answered} respostas registradas
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function Result({ company, result, saving, onRestart }) {
-  const scoreClass = result.overall < 50 ? "low" : result.overall < 70 ? "medium" : "high";
-
-  return (
-    <main className="result-page">
-      <div className="result-container">
-        <div className="result-header">
-          <div className="eyebrow dark">DIAGNÓSTICO CONCLUÍDO</div>
-          <h1>
-            {company.contact.split(" ")[0]}, este é o retrato atual do comercial da {company.company}.
-          </h1>
-          <p>{result.maturity.description}</p>
-        </div>
-
-        <section className="score-panel">
-          <div className={`score-ring ${scoreClass}`}>
-            <strong>{result.overall}</strong>
-            <span>/100</span>
-          </div>
-          <div>
-            <span className="score-label">ÍNDICE DE MATURIDADE G.I.N.G.A.</span>
-            <h2>{result.maturity.label}</h2>
-            <p>{result.maturity.description}</p>
-          </div>
-        </section>
-
-        <section className="result-section">
-          <div className="section-title">
-            <Target size={20} />
-            <h2>Onde está o principal gargalo?</h2>
-          </div>
-          <div className="bottleneck">
-            <div className="bottleneck-score">{result.primaryBottleneck?.score || 0}</div>
-            <div>
-              <strong>{result.primaryBottleneck?.dimensionName}</strong>
-              <h3>{result.primaryBottleneck?.title}</h3>
-              <p>{result.primaryBottleneck?.action}</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="result-section">
-          <div className="section-title">
-            <BarChart3 size={20} />
-            <h2>Mapa de maturidade</h2>
-          </div>
-          <div className="score-list">
-            {dimensions.map((d) => {
-              const score = result.dimensionScores[d.id] || 0;
-              return (
-                <div className="score-row" key={d.id}>
-                  <div className="score-row-label">
-                    <span>{d.short}</span>
-                    <strong>{score}</strong>
-                  </div>
-                  <div className="bar">
-                    <div style={{ width: `${score}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="next-step">
-          <div className="eyebrow">PRÓXIMO PASSO RECOMENDADO</div>
-          <h2>{result.productFit?.product}</h2>
-          <p>{result.productFit?.reason}</p>
-          <div className="next-step-actions">
-            <button
-              className="primary-button"
-              onClick={() => window.open("https://wa.me/", "_blank")}
-            >
-              Bora conversar <ArrowRight size={18} />
-            </button>
-            <button className="secondary-button" onClick={() => window.print()}>
-              Imprimir / salvar relatório
-            </button>
-          </div>
-        </section>
-
-        {saving && <div className="saving-note">Salvando diagnóstico no banco de dados…</div>}
-
-        <div className="result-footer">
-          <span>GINGA AÍ</span>
-          <span>Não é sorte. É sistema. E dá pra treinar.</span>
-          <button className="text-button" onClick={onRestart}>
-            <RotateCcw size={14} /> Refazer
-          </button>
         </div>
       </div>
     </main>
