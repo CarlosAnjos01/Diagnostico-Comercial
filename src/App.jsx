@@ -118,8 +118,7 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">G</span>
-          <span>GINGA AÍ</span>
+          <img src="/logo.png" alt="Ginga Aí" className="brand-logo" />
         </div>
         <div className="topbar-note">Diagnóstico Comercial</div>
       </header>
