@@ -95,9 +95,7 @@ export const questions = [
 ];
 
 export const answerOptions = [
-  { value: 1, label: "Não existe", helper: "Não há prática definida." },
-  { value: 2, label: "Informal", helper: "Acontece, mas depende de pessoas." },
-  { value: 3, label: "Parcial", helper: "Existe em alguns casos, sem padrão." },
-  { value: 4, label: "Estruturado", helper: "Existe padrão e é utilizado." },
-  { value: 5, label: "Gerenciado", helper: "É padrão, medido e melhorado." },
+  { value: 1, label: "Não existe", helper: "Não há prática definida ou é inexistente." },
+  { value: 2, label: "Parcial / Informal", helper: "Acontece sem padrão claro ou depende de pessoas." },
+  { value: 3, label: "Estruturado / Gerenciado", helper: "Processo padronizado, medido e acompanhado." },
 ];
