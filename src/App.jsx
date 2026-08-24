@@ -38,13 +38,15 @@ const initialCompany = {
 };
 
 export default function App() {
-  const [screen, setScreen] = useState(() => {
-    const path = window.location.pathname.toLowerCase();
-    if (path.includes("/admin")) return "admin";
-    if (path.includes("/portal/")) return "portal";
+  // Leitura direta e imediata da URL completa para ignorar a landing page se for /admin ou /portal
+  const getScreenFromUrl = () => {
+    const url = window.location.href.toLowerCase();
+    if (url.includes("/admin")) return "admin";
+    if (url.includes("/portal")) return "portal";
     return "landing";
-  });
+  };
 
+  const [screen, setScreen] = useState(getScreenFromUrl);
   const [company, setCompany] = useState(initialCompany);
   const [answers, setAnswers] = useState({});
   const [current, setCurrent] = useState(0);
@@ -52,25 +54,20 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [portalData, setPortalData] = useState(null);
 
+  // Garante a reavaliação da rota e busca dados do portal se aplicável
   useEffect(() => {
-    const handleLocation = () => {
-      const path = window.location.pathname.toLowerCase();
-      if (path.includes("/admin")) {
-        setScreen("admin");
-      } else if (path.includes("/portal/")) {
-        setScreen("portal");
-        const companyId = path.split("/portal/")[1];
-        if (companyId) {
-          getCompanyPortalData(companyId)
-            .then((data) => setPortalData(data))
-            .catch((err) => console.error("Erro ao carregar portal:", err));
-        }
-      }
-    };
+    const currentScreen = getScreenFromUrl();
+    setScreen(currentScreen);
 
-    handleLocation();
-    window.addEventListener("popstate", handleLocation);
-    return () => window.removeEventListener("popstate", handleLocation);
+    if (currentScreen === "portal") {
+      const url = window.location.pathname.toLowerCase();
+      const companyId = url.split("/portal/")[1];
+      if (companyId) {
+        getCompanyPortalData(companyId)
+          .then((data) => setPortalData(data))
+          .catch((err) => console.error("Erro ao carregar portal:", err));
+      }
+    }
   }, []);
 
   const currentQuestion = questions[current];
@@ -98,11 +95,9 @@ export default function App() {
   }
 
   async function finish() {
-    // Processamento do Motor V2
     const built = runEngineV2(answers, company, questions);
     setResult(built);
     
-    // Alimenta os dados do Portal do Cliente
     setPortalData({
       overall: built.overall,
       maturity: built.maturity,
@@ -128,7 +123,6 @@ export default function App() {
       console.error("Erro ao persistir diagnóstico no D1:", error);
     } finally {
       setSaving(false);
-      // Redireciona diretamente para o PORTAL OPERACIONAL
       setScreen("portal");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -153,14 +147,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function restart() {
-    setAnswers({});
-    setCurrent(0);
-    setResult(null);
-    setCompany(initialCompany);
-    setScreen("landing");
-  }
-
   return (
     <div className="app-shell">
       {screen !== "admin" && screen !== "portal" && (
@@ -172,7 +158,7 @@ export default function App() {
         </header>
       )}
 
-      {/* PAINEL RESTRITO DE INTERNET (ADMIN) */}
+      {/* ROTA ADMIN DA DIRETORIA GINGA AÍ */}
       {screen === "admin" && <AdminDashboard />}
 
       {/* PORTAL OPERACIONAL DO CLIENTE */}
