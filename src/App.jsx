@@ -173,7 +173,7 @@ function Landing({ onStart }) {
             Começar diagnóstico <ArrowRight size={19} />
           </button>
           <div className="microcopy">
-            <LockKeyhole size={14} /> Diagnóstico confidencial · sem compromisso
+            <LockKeyhole size={14} /> Diagnóstico confidencial
           </div>
         </div>
 
