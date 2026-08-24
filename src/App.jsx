@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import logoImg from "./logo.jpeg";
 import {
   ArrowLeft,
   ArrowRight,
@@ -118,7 +118,7 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <img src="/logo.png" alt="Ginga Aí" className="brand-logo" />
+          <img src={logoImg} alt="Ginga Aí" className="brand-logo" />
         </div>
         <div className="topbar-note">Diagnóstico Comercial</div>
       </header>
