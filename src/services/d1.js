@@ -30,9 +30,3 @@ export async function getCompanyPortalData(companyId) {
   return response.json(); 
 }
 ```[cite: 10]
-
-6. Role até o final e clique no botão verde **Commit changes...** para salvar[cite: 10].
-
----
-
-Ao salvar, um **novo commit** será gerado no GitHub. A Cloudflare puxará essa versão mais recente e a build será concluída com sucesso[cite: 26]! Me avise assim que salvar.
