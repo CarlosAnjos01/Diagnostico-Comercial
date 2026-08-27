@@ -19,7 +19,7 @@ import {
 
 import { answerOptions, dimensions, questions } from "./data/questions";
 import { runEngineV2 } from "./core/recommender";
-import { submitCollaboratorResponse, getCompanyPortalData } from "./services/d1";
+import { saveDiagnostic } from "./services/api";
 import AdminDashboard from "./pages/AdminDashboard";
 import PortalClient from "./pages/PortalClient";
 
