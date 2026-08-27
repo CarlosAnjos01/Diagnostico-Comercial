@@ -1,70 +1,50 @@
-import { dimensions } from "./questions";
+import { dimensions, questions } from "./questions";
 
 export function calculateDimensionScores(answers) {
   const scores = {};
 
   for (const dimension of dimensions) {
-    const items = Object.entries(answers).filter(([id]) => {
-      return id.startsWith(prefixFor(dimension.id));
-    });
+    const dimQuestions = questions.filter((q) => q.dimension === dimension.id);
 
-    if (!items.length) {
+    if (!dimQuestions.length) {
       scores[dimension.id] = 0;
       continue;
     }
 
-    const total = items.reduce((sum, [, value]) => sum + Number(value), 0);
-    const max = items.length * 5;
-    scores[dimension.id] = Math.round((total / max) * 100);
+    let totalPoints = 0;
+    let maxPossiblePoints = 0;
+
+    dimQuestions.forEach((q) => {
+      const userVal = Number(answers[q.id] || 0);
+      const weight = q.weight || 1;
+
+      if (userVal > 0) {
+        const normalizedScore = ((userVal - 1) / 4) * 100;
+        totalPoints += normalizedScore * weight;
+        maxPossiblePoints += 100 * weight;
+      }
+    });
+
+    scores[dimension.id] = maxPossiblePoints > 0
+      ? Math.round(totalPoints / maxPossiblePoints)
+      : 0;
   }
 
   return scores;
 }
 
-function prefixFor(dimensionId) {
-  const map = {
-    estrategia: "estr-",
-    processo: "proc-",
-    pessoas: "pess-",
-    gestao: "gest-",
-    tecnologia: "tec-",
-    marketing: "mkt-",
-    retencao: "ret-",
-  };
-  return map[dimensionId];
-}
-
 export function calculateOverall(scores) {
   const values = Object.values(scores);
+  if (!values.length) return 0;
   return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
 }
 
 export function maturityLevel(score) {
-  if (score < 30) return {
-    key: "informal",
-    label: "Informal",
-    description: "O comercial depende fortemente de pessoas, experiência e improviso.",
-  };
-  if (score < 50) return {
-    key: "emergente",
-    label: "Emergente",
-    description: "Existem boas práticas, mas ainda falta consistência e padrão.",
-  };
-  if (score < 70) return {
-    key: "estruturacao",
-    label: "Estruturação",
-    description: "A base existe, mas há gargalos importantes impedindo previsibilidade.",
-  };
-  if (score < 85) return {
-    key: "gerenciado",
-    label: "Gerenciado",
-    description: "O processo é relativamente consistente e começa a ser orientado por dados.",
-  };
-  return {
-    key: "escalavel",
-    label: "Escalável",
-    description: "A operação apresenta alto nível de padronização, gestão e capacidade de evolução.",
-  };
+  if (score < 30) return { key: "informal", label: "Informal", description: "O comercial depende fortemente de pessoas e improviso." };
+  if (score < 50) return { key: "emergente", label: "Emergente", description: "Existem boas práticas, mas falta padrão e consistência." };
+  if (score < 70) return { key: "estruturacao", label: "Estruturação", description: "A base existe, mas há gargalos travando a previsibilidade." };
+  if (score < 85) return { key: "gerenciado", label: "Gerenciado", description: "O processo é consistente e orientado por dados." };
+  return { key: "escalavel", label: "Escalável", description: "Alta padronização, automação e capacidade de crescimento." };
 }
 
 export function getGaps(scores) {
@@ -74,34 +54,13 @@ export function getGaps(scores) {
 }
 
 const recommendations = {
-  estrategia: {
-    title: "Definir direção comercial",
-    action: "Construir ICP, proposta de valor, segmentos prioritários e foco de crescimento.",
-  },
-  processo: {
-    title: "Padronizar o processo comercial",
-    action: "Desenhar etapas, critérios de passagem, qualificação, proposta e follow-up.",
-  },
-  pessoas: {
-    title: "Organizar papéis e rotina do time",
-    action: "Definir responsabilidades, metas, treinamento e cadência de gestão.",
-  },
-  gestao: {
-    title: "Implantar gestão por indicadores",
-    action: "Definir metas, indicadores, conversões, forecast e rotina de acompanhamento.",
-  },
-  tecnologia: {
-    title: "Organizar dados e ferramentas",
-    action: "Estruturar CRM e dados depois de validar o processo que a tecnologia irá suportar.",
-  },
-  marketing: {
-    title: "Conectar geração de demanda ao pipeline",
-    action: "Definir canais, ICP, critérios de lead qualificado e métricas de impacto comercial.",
-  },
-  retencao: {
-    title: "Estruturar pós-venda e expansão",
-    action: "Criar onboarding, rotina de relacionamento, recompra, indicação e expansão.",
-  },
+  estrategia: { title: "Definir Direção e ICP Claro", action: "Mapear Perfil de Cliente Ideal, proposta de valor e segmentos de maior margem." },
+  processo: { title: "Padronizar o Funil de Vendas", action: "Desenhar etapas, gatilhos de passagem e cadência de follow-up." },
+  pessoas: { title: "Reduzir Dependência e Organizar Rotina", action: "Tirar a venda da cabeça do fundador, definir metas e criar Playbook." },
+  gestao: { title: "Implantar Gestão por Indicadores", action: "Estabelecer reuniões semanais de pipeline e acompanhar conversões." },
+  tecnologia: { title: "Garantir Uso Real do CRM", action: "Configurar o CRM ao processo e criar governança de uso pelo time." },
+  marketing: { title: "Conectar Demanda ao Pipeline", action: "Estruturar canais previsíveis de prospecção e alinhar SLA de lead qualificado." },
+  retencao: { title: "Estruturar Pós-Venda e Expansão", action: "Criar régua de onboarding, gestão de satisfação e processo de indicação." },
 };
 
 export function getRecommendations(scores) {
@@ -114,12 +73,9 @@ export function getRecommendations(scores) {
 }
 
 export function getPrimaryBottleneck(scores) {
-  const [dimension, score] = Object.entries(scores).sort(([, a], [, b]) => a - b)[0];
-  return {
-    dimension,
-    score,
-    ...recommendations[dimension],
-  };
+  const sorted = Object.entries(scores).sort(([, a], [, b]) => a - b);
+  const [dimension, score] = sorted[0] || ["processo", 0];
+  return { dimension, score, ...recommendations[dimension] };
 }
 
 export function buildResult(answers) {
