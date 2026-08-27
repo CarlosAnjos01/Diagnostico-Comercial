@@ -29,4 +29,3 @@ export async function getCompanyPortalData(companyId) {
 
   return response.json(); 
 }
-```[cite: 10]
