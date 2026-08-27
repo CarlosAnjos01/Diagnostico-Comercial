@@ -54,20 +54,10 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [portalData, setPortalData] = useState(null);
 
-  // Garante a reavaliação da rota e busca dados do portal se aplicável
+  // Garante a reavaliação da rota na inicialização
   useEffect(() => {
     const currentScreen = getScreenFromUrl();
     setScreen(currentScreen);
-
-    if (currentScreen === "portal") {
-      const url = window.location.pathname.toLowerCase();
-      const companyId = url.split("/portal/")[1];
-      if (companyId) {
-        getCompanyPortalData(companyId)
-          .then((data) => setPortalData(data))
-          .catch((err) => console.error("Erro ao carregar portal:", err));
-      }
-    }
   }, []);
 
   const currentQuestion = questions[current];
@@ -98,27 +88,25 @@ export default function App() {
     const built = runEngineV2(answers, company, questions);
     setResult(built);
     
-    setPortalData({
+    const formattedPortalData = {
       overall: built.overall,
       maturity: built.maturity,
       dimensionScores: built.dimensionScores,
       gaps: built.gaps,
       productFit: built.productFit,
       company: company
-    });
+    };
 
+    setPortalData(formattedPortalData);
     setSaving(true);
 
     try {
-      await submitCollaboratorResponse(
+      await saveDiagnostic({
         company,
-        {
-          name: company.contact,
-          email: company.email,
-          role: company.role || "Dono/Diretor",
-        },
-        answers
-      );
+        answers,
+        result: built,
+        source: new URLSearchParams(window.location.search).get("utm_source") || "direct",
+      });
     } catch (error) {
       console.error("Erro ao persistir diagnóstico no D1:", error);
     } finally {
